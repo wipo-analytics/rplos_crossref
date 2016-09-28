@@ -1,0 +1,65 @@
+---
+title: "rplos walkthrough"
+output: html_document
+---
+
+This is a brief introduction to using RStudio to retrieve scientific literature from the [Public Library of Science](https://www.plos.org) using the [`rplos`](https://github.com/ropensci/rplos) package from [rOpenSci](https://ropensci.org) to access the [PLOS Search API](http://api.plos.org/solr/faq/). For a more detailed introduction read the [Manual chapter](https://wipo-analytics.github.io/scientific-literature-with-rplos.html).
+
+To get started load the rpackages we will need
+
+```{r library, eval=TRUE, tidy=TRUE}
+library(dplyr) # used in rcrossref session
+library(tidyr) # used in rcrossref session
+library(rplos)
+library(readr)
+library(rcrossref)
+```
+
+# Search with rplos
+
+To see a function (with examples) use 
+```{r}
+?searchplos
+```
+
+In R functions take arguments. The documentation panel helps you to understand what the arguments are and provides working examples to help you get started. 
+
+```{r rplos20, eval=TRUE, cache=TRUE, tidy=TRUE}
+library(rplos)
+drones <- rplos::searchplos(q = "drones", fl = c("id","publication_date", "title", "abstract"), limit = 20)
+```
+
+Full results (do not run as takes time)
+```{r searchplos1, eval=FALSE, cache=TRUE, tidy=TRUE}
+library(rplos)
+drones_full <- rplos::searchplos(q = "drones", fl = c("id","publication_date", "title", "abstract"), limit = 212)
+drones_full <- drones_full$data
+save(drones_full, file = "drones_full.rda")
+```
+
+If we click on `drones` in values we will see that it has 2 elements `meta` and `data`. 
+
+Meta gives us the total number of results and data is a table containing 20 results (the default). To access those we use the dollar sign `$`. We will create a new object using <- and call it `dat`.
+
+```{r}
+drones_plos <- drones$data
+```
+
+Click on dat in the Global environment or type the following in the console.
+```{r cache=TRUE}
+View(drones_plos)
+```
+
+Writing the data to a file. 
+
+```{r}
+library(readr)
+write_csv(drones_plos, "drones_plos.csv")
+```
+
+If we look under the Files Tab on the right we will now see a file called dat. 
+
+There is a lot more information on how to use rplos including using multiword terms in the [Manual chapter](https://wipo-analytics.github.io/scientific-literature-with-rplos.html). 
+
+
+

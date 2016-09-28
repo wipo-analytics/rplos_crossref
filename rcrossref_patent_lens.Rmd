@@ -1,0 +1,95 @@
+---
+title: "crossref"
+author: "Paul Oldham"
+date: "17 July 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rcrossref)
+library(dplyr)
+library(readr)
+```
+
+###Import a doi file from a pen drive
+
+To import from your pendrive go to `File > Import Dataset > From csv`. Locate the file in `drones_fulltext` called  `doi_drone_drones_fulltext_families_5884.txt`
+
+In the Name section you may want to rename it to something shorter. Like `dois`. 
+
+###Import from Github
+
+The alternative route is to use the following code using `readr` to import the data file directly from Github. It is a matter of going to the repository, finding the file, clicking `Raw` and then copying the URL. 
+
+```{r}
+library(rcrossref)
+library(readr)
+library(dplyr)
+dois <- read_csv("https://raw.githubusercontent.com/wipo-analytics/opensource-patent-analytics/master/2_datasets/drones%20copy/drones_fulltext/doi_drone_drones_fulltext_families_5884.txt")
+```
+
+View the dois
+
+```{r}
+dois
+```
+
+###Create a sample and fetch the data
+
+Create a small sample of the dois to practice with. In R this is subsetting a data table. After specifying dois we then add the rows we want as 1:10, after the comma is where any columns we want would be (leave that blank).
+
+```{r}
+dois_10 <- dois[1:10, ]
+```
+
+Use the function `cr_works` from rcrossref to pull back the data for the dois. 
+
+```{r}
+library(rcrossref)
+ten_results <- cr_works(dois = dois_10$doi)
+```
+
+If we simply type ten_results into the console we will see that there will be three elements `$meta`, `$data`, `$facets`.
+
+```{r}
+ten_results
+```
+
+We want the part that says $data. To do that we use. 
+
+```{r}
+ten_resultsdf <- ten_results$data
+```
+
+Note that when we look at ten_results
+
+```{r}
+View(ten_resultsdf)
+```
+
+###Write the data to a file
+
+```{r}
+library(readr) #throwing an error because of list columns 
+write_csv(ten_resultsdf, "ten_results.csv")
+```
+
+###Create an authors sub-dataset
+
+We will see that the author field is concatenated. We can extract an authors table using the following code. The first part separates out the given and the first names lists for each record. The second part brings the author family and given names together. 
+
+```{r}
+library(tidyr)
+authors <- unnest(ten_resultsdf, author, .drop = FALSE) %>% unite(author, c(family, given), sep = ", ", remove = FALSE)
+```
+
+Write the results to a file
+
+```{r}
+write_csv(authors, "authors.csv")
+```
+
